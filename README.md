@@ -194,34 +194,20 @@ MREFscore
 
 ```text
 MREF/
-
 ├── .gitignore
-
 ├── LICENSE
-
 ├── MANIFEST.in
-
 ├── README.md
-
 ├── setup.py
-
-├── upload\_pypi.sh
-
+├── upload_pypi.sh
 ├── MREF/
-
 │   ├── __init__.py
-
 │   ├── cli.py
-
 │   ├── mref_metric.py
-
 │   └── pos_prior_en.json
-
 └── example/
-
-&#x20;   ├── comp.txt
-
-&#x20;   └── simp.txt
+    ├── comp.txt
+    └── simp.txt
 ```
 
 ## Notes
