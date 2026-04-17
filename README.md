@@ -143,11 +143,11 @@ Example output:
 
 corpus Saxis = 0.533102
 
-corpus Maxis = 0.935656
+corpus Maxis = 0.935645
 
 corpus Gaxis = 0.714641
 
-corpus MREFscore = 0.752744
+corpus MREFscore = 0.752739
 
 ```
 
