@@ -140,15 +140,10 @@ mref -r example/comp.txt -c example/simp.txt -o results.txt
 Example output:
 
 ```text
-
 corpus Saxis = 0.533102
-
 corpus Maxis = 0.935645
-
 corpus Gaxis = 0.714641
-
 corpus MREFscore = 0.752739
-
 ```
 
 ### Corpus mode with one score only
