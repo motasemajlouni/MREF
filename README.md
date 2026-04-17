@@ -229,7 +229,7 @@ MREF/
 * The public class is `MREF`.
 * The current implementation is based on the equation-matching final version.
 * If you distribute prebuilt resources, place them inside the `MREF/` package directory.
-* For reproducibility, the first run after deleting `pos\_prior\_en.json` may take longer because the resource will be rebuilt automatically.
+* For reproducibility, the first run after deleting `pos_prior_en.json` may take longer because the resource will be rebuilt automatically.
 
 ## Citation
 
