@@ -1,6 +1,6 @@
 # MREF
 
-[![made-with-python]((https://img.shields.io/badge/Made%20with-Python-red.svg)](https://www.python.org/)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Automatic evaluation metric accompanying the paper **MREF: A Multi-Aspect Reference-Free Evaluation Framework for Text Simplification**.
