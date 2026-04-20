@@ -819,20 +819,23 @@ class MREF:
             spacy_model=m_spacy_model,
             use_wordnet=use_wordnet,
         )
+
         # reuse same spaCy pipeline for S_axis
-        self.S_axis = SimplicityAxis_Equations(self.M_axis.nlp, language=self.language)
+        self.S_axis = SimplicityAxis_Equations(
+            self.M_axis.nlp,
+            language=self.language,
+        )
 
         # Grammar axis can reuse the same spaCy model name if none given
         self.G_axis = GrammarAxis_Equations(
             language=self.language,
-            spacy_model=g_spacy_model or (m_spacy_model),
+            spacy_model=g_spacy_model or m_spacy_model,
             pos_tagset=g_pos_tagset,
             pos_index_path=g_pos_index_path,
             max_tatoeba_sentences=max_tatoeba_sentences,
         )
-        
 
-   def score(
+    def score(
         self,
         comp: str,
         simp: str,
@@ -841,26 +844,37 @@ class MREF:
         G = self.G_axis.score(comp, simp)
         M = self.M_axis.score(comp, simp)
         S = self.S_axis.score(comp, simp)
-    
+
         w = (axis_weights or self.weights).normalized()
-    
+
         return math.sqrt(
             w.w_G * (G ** 2) +
             w.w_M * (M ** 2) +
             w.w_S * (S ** 2)
         )
 
-    def score_axes(self, comp: str, simp: str) -> Dict[str, float]:
+    def score_axes(
+        self,
+        comp: str,
+        simp: str,
+        axis_weights: Optional[AxisWeights] = None,
+    ) -> Dict[str, float]:
         G = self.G_axis.score(comp, simp)
         M = self.M_axis.score(comp, simp)
         S = self.S_axis.score(comp, simp)
-        w = self.weights
-        mref = math.sqrt(w.w_G * (G ** 2) + w.w_M * (M ** 2) + w.w_S * (S ** 2))
-    
+
+        w = (axis_weights or self.weights).normalized()
+
+        mref_score = math.sqrt(
+            w.w_G * (G ** 2) +
+            w.w_M * (M ** 2) +
+            w.w_S * (S ** 2)
+        )
+
         return {
             "G_axis": G,
             "M_axis": M,
             "S_axis": S,
-            "MREFscore": mref,
+            "MREFscore": mref_score,
         }
 
