@@ -1,7 +1,7 @@
 import os
 import argparse
 from statistics import fmean
-from .mref_metric import MREF
+from .mref_metric import MREF, AxisWeights
 
 
 def _read_lines(path: str):
@@ -84,7 +84,53 @@ def main():
         help="Optional limit for auto-building POS prior from Tatoeba",
     )
 
+    parser.add_argument(
+        "--w-g",
+        dest="w_g",
+        type=float,
+        default=None,
+        help="Optional grammaticality weight",
+    )
+
+    parser.add_argument(
+        "--w-m",
+        dest="w_m",
+        type=float,
+        default=None,
+        help="Optional meaning-preservation weight",
+    )
+
+    parser.add_argument(
+        "--w-s",
+        dest="w_s",
+        type=float,
+        default=None,
+        help="Optional simplicity weight",
+    )
+
     args = parser.parse_args()
+
+    weight_args = [args.w_g, args.w_m, args.w_s]
+
+    if any(w is not None for w in weight_args):
+        if not all(w is not None for w in weight_args):
+            parser.error(
+                "If you pass custom weights, you must provide --w-g, --w-m, and --w-s together."
+            )
+
+        if any(w < 0 for w in weight_args):
+            parser.error("Custom weights must be non-negative.")
+
+        if (args.w_g + args.w_m + args.w_s) <= 0:
+            parser.error("At least one custom weight must be positive.")
+
+        axis_weights = AxisWeights(
+            w_G=args.w_g,
+            w_M=args.w_m,
+            w_S=args.w_s,
+        )
+    else:
+        axis_weights = None
 
     metric = MREF(
         language=args.language,
@@ -117,11 +163,11 @@ def main():
             results = []
 
             for comp, simp in zip(comps, simps):
-                out = metric.score_axes(comp, simp)
+                out = metric.score_axes(comp, simp, axis_weights=axis_weights)
                 s_scores.append(out["S_axis"])
                 m_scores.append(out["M_axis"])
                 g_scores.append(out["G_axis"])
-                mref_scores.append(out["MREF"])
+                mref_scores.append(out["MREFscore"])
 
             if args.saxis_only:
                 print(f"corpus Saxis = {fmean(s_scores):.6f}")
@@ -182,12 +228,12 @@ def main():
     else:
         comp = args.ref
         simp = args.cand
-        out = metric.score_axes(comp, simp)
+        out = metric.score_axes(comp, simp, axis_weights=axis_weights)
 
         s = out["S_axis"]
         m = out["M_axis"]
         g = out["G_axis"]
-        ms = out["MREF"]
+        ms = out["MREFscore"]
 
         if args.saxis_only:
             print(f"Saxis = {s:.6f}")
