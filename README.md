@@ -24,7 +24,7 @@ The package returns four scores:
 * `S_axis`
 * `M_axis`
 * `G_axis`
-* `MREF`
+* `MREFscore`
 
 ## Features
 
@@ -33,6 +33,7 @@ The package returns four scores:
 * Single-pair scoring from strings
 * Corpus scoring from line-aligned text files
 * Optional axis-only CLI modes
+* Optional task-specific weighting through both the Python API and the CLI
 * Automatic generation of `pos_prior_<language>.json` from Tatoeba if the file is missing
 
 ## Installation
@@ -54,6 +55,7 @@ For example with conda:
 ```bash
 conda create -n mref python=3.10 -y
 conda activate mref
+set PYTHONNOUSERSITE=1
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install .
 ```
@@ -74,7 +76,11 @@ If this file is not found at the default path, MREF will automatically build it 
 * **internet access is required** for the initial build
 * later runs will reuse the saved resource file
 
+The first run may also download the spaCy English model if it is not already installed.
+
 ## Python usage
+
+### Basic example
 
 ```python
 from MREF import MREF
@@ -95,9 +101,72 @@ Example output:
     "G_axis": 0.827862,
     "M_axis": 0.830623,
     "S_axis": 0.580331,
-    "MREF": 0.755441
+    "MREFscore": 0.755441
 }
 ```
+
+### Python usage with custom weights
+
+You can override the default equal-weight aggregation by passing custom `AxisWeights`
+either when creating the `MREF` object or when calling `score()` / `score_axes()`.
+
+#### Set custom default weights for the metric instance
+
+```python
+from MREF import MREF, AxisWeights
+
+metric = MREF(
+    language="en",
+    axis_weights=AxisWeights(w_G=0.2, w_M=0.5, w_S=0.3),
+)
+
+result = metric.score_axes(
+    comp="The man, who was very tall, entered the house.",
+    simp="The tall man entered the house."
+)
+
+print(result)
+```
+
+#### Override the weights for a single call
+
+```python
+from MREF import MREF, AxisWeights
+
+metric = MREF(language="en")
+
+result = metric.score_axes(
+    comp="The man, who was very tall, entered the house.",
+    simp="The tall man entered the house.",
+    axis_weights=AxisWeights(w_G=0.2, w_M=0.5, w_S=0.3),
+)
+
+print(result)
+```
+
+#### Get only the scalar score with custom weights
+
+```python
+from MREF import MREF, AxisWeights
+
+metric = MREF(language="en")
+
+score = metric.score(
+    comp="The man, who was very tall, entered the house.",
+    simp="The tall man entered the house.",
+    axis_weights=AxisWeights(w_G=0.2, w_M=0.5, w_S=0.3),
+)
+
+print(score)
+```
+
+### Notes on weights
+
+* `w_G` controls the contribution of grammaticality
+* `w_M` controls the contribution of meaning preservation
+* `w_S` controls the contribution of simplicity
+
+The weights are normalized internally, so they do not need to sum to 1 exactly.
 
 ## Command Line Interface (CLI)
 
@@ -125,6 +194,25 @@ mref -r "The man, who was very tall, entered the house." -c "The tall man entere
 mref -r "The man, who was very tall, entered the house." -c "The tall man entered the house." --mref-only
 ```
 
+### Custom task-specific weights from the CLI
+
+You can also pass custom weights directly from the command line:
+
+```bash
+mref -r "The man, who was very tall, entered the house." \
+     -c "The tall man entered the house." \
+     --w-g 0.2 --w-m 0.5 --w-s 0.3
+```
+
+To combine custom weights with one-score output:
+
+```bash
+mref -r "The man, who was very tall, entered the house." \
+     -c "The tall man entered the house." \
+     --w-g 0.2 --w-m 0.5 --w-s 0.3 \
+     --mref-only
+```
+
 ### Corpus mode
 
 If both `-r` and `-c` are file paths, MREF treats them as **line-aligned corpora**:
@@ -140,16 +228,24 @@ mref -r example/comp.txt -c example/simp.txt -o results.txt
 Example output:
 
 ```text
-corpus Saxis = 0.533102
-corpus Maxis = 0.935645
-corpus Gaxis = 0.714641
-corpus MREFscore = 0.752739
+corpus Saxis = 0.574783
+corpus Maxis = 0.803508
+corpus Gaxis = 0.876987
+corpus MREFscore = 0.763347
 ```
 
 ### Corpus mode with one score only
 
 ```bash
 mref -r example/comp.txt -c example/simp.txt --mref-only -o mref_only.txt
+```
+
+### Corpus mode with custom weights
+
+```bash
+mref -r example/comp.txt -c example/simp.txt \
+     --w-g 0.2 --w-m 0.5 --w-s 0.3 \
+     --mref-only -o results.txt
 ```
 
 ### Language selection
@@ -166,6 +262,16 @@ This is useful for testing:
 mref -r "complex sentence" -c "simple sentence" --max-tatoeba-sentences 50000
 ```
 
+### Notes on CLI weights
+
+If you pass custom weights from the CLI, you must provide all three together:
+
+* `--w-g`
+* `--w-m`
+* `--w-s`
+
+The weights must be non-negative, and at least one must be positive. They are normalized internally before scoring.
+
 ## Output files
 
 In corpus mode, the output file contains sentence-level scores.
@@ -177,8 +283,6 @@ Examples:
 ```text
 S_axis ; M_axis ; G_axis ; MREFscore
 0.587394 ; 0.922936 ; 0.364495 ; 0.665757
-
-
 ...
 ```
 
@@ -231,4 +335,3 @@ MREF/
 ## License
 
 MIT
-
