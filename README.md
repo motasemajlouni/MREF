@@ -228,10 +228,10 @@ mref -r example/comp.txt -c example/simp.txt -o results.txt
 Example output:
 
 ```text
-corpus Saxis = 0.574783
-corpus Maxis = 0.803508
-corpus Gaxis = 0.876987
-corpus MREFscore = 0.763347
+corpus Saxis = 0.533102
+corpus Maxis = 0.935656
+corpus Gaxis = 0.714641
+corpus MREFscore = 0.752744
 ```
 
 ### Corpus mode with one score only
