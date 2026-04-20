@@ -2,18 +2,7 @@
 mref_metric_equations.py
 
 "Equation version" of MREF that matches the paper section equations
-for G_axis, M_axis, and S_axis, intended for A/B comparison against
-the current implementation in mref_metric.py.
-
-Usage:
-    from mref_metric import MREF as MREF_Current
-    from mref_metric_equations import MREF, compare_one
-
-    cur = MREF_Current(language="en")
-    eq  = MREF(language="en")
-
-    res = compare_one(cur, eq, comp="...", simp="...")
-    print(res)
+for G_axis, M_axis, and S_axis.
 """
 
 #from __future__ import annotations
@@ -843,38 +832,35 @@ class MREF:
         )
         
 
-    def score(self, comp: str, simp: str) -> float:
+   def score(
+        self,
+        comp: str,
+        simp: str,
+        axis_weights: Optional[AxisWeights] = None,
+    ) -> float:
+        G = self.G_axis.score(comp, simp)
+        M = self.M_axis.score(comp, simp)
+        S = self.S_axis.score(comp, simp)
+    
+        w = (axis_weights or self.weights).normalized()
+    
+        return math.sqrt(
+            w.w_G * (G ** 2) +
+            w.w_M * (M ** 2) +
+            w.w_S * (S ** 2)
+        )
+
+    def score_axes(self, comp: str, simp: str) -> Dict[str, float]:
         G = self.G_axis.score(comp, simp)
         M = self.M_axis.score(comp, simp)
         S = self.S_axis.score(comp, simp)
         w = self.weights
-        return math.sqrt(w.w_G * (G ** 2) + w.w_M * (M ** 2) + w.w_S * (S ** 2))
-
-    def score_axes(self, comp: str, simp: str) -> Dict[str, float]:
+        mref = math.sqrt(w.w_G * (G ** 2) + w.w_M * (M ** 2) + w.w_S * (S ** 2))
+    
         return {
-            "G_axis": self.G_axis.score(comp, simp),
-            "M_axis": self.M_axis.score(comp, simp),
-            "S_axis": self.S_axis.score(comp, simp),
-            "MREF": self.score(comp, simp),
+            "G_axis": G,
+            "M_axis": M,
+            "S_axis": S,
+            "MREFscore": mref,
         }
 
-
-# ============================= Comparison helper =============================
-
-def compare_one(current_mref, eq_mref: MREF, comp: str, simp: str) -> Dict[str, Any]:
-    """
-    current_mref: instance of the current implementation (from mref_metric.py)
-    eq_mref:       instance of MREF_Equations (this file)
-
-    Returns: per-axis + final scores for both, plus diffs.
-    """
-    cur_axes = {
-        "G_axis": current_mref.G_axis.score(comp, simp),
-        "M_axis": current_mref.M_axis.score(comp, simp),
-        "S_axis": current_mref.S_axis.score(comp, simp),
-        "MREF": current_mref.score(comp, simp),
-    }
-    eq_axes = eq_mref.score_axes(comp, simp)
-
-    diff = {k: eq_axes[k] - cur_axes[k] for k in cur_axes.keys()}
-    return {"current": cur_axes, "equations": eq_axes, "delta(eq-cur)": diff}
