@@ -9,7 +9,6 @@ Automatic evaluation metric accompanying the paper **MREF: A Multi-Aspect Refere
 
 * AlMotasem Bellah Al Ajlouni
 * Jinlong Li
-* Huanhuan Chen
 
 ## Overview
 
@@ -320,17 +319,6 @@ MREF/
 * The current implementation is based on the equation-matching final version.
 * If you distribute prebuilt resources, place them inside the `MREF/` package directory.
 * For reproducibility, the first run after deleting `pos_prior_en.json` may take longer because the resource will be rebuilt automatically.
-
-## Citation
-
-```bibtex
-@article{alajlouni2026mref,
-  title   = {MREF: A Multi-Aspect Reference-Free Evaluation Framework for Text Simplification},
-  author  = {AlMotasem Bellah Al Ajlouni and Jinlong Li and Huanhuan Chen},
-  journal = {Language Resources and Evaluation},
-  year    = {under review}
-}
-```
 
 ## License
 
